@@ -41,20 +41,25 @@ class TestApp:
         with app.app_context():
 
             mb = Bakery.query.filter_by(id=1).first()
-            mb.name = "My Bakery"
-            db.session.add(mb)
-            db.session.commit()
 
-            response = app.test_client().patch(
-                '/bakeries/1',
-                data = {
-                    "name": "Your Bakery",
-                }
-            )
+            if mb is None:
+                raise AssertionError(f"No bakery found with id=1")
 
-            assert(response.status_code == 200)
-            assert(response.content_type == 'application/json')
-            assert(mb.name == "Your Bakery")
+        mb.name = "Your Bakery"
+        db.session.add(mb)
+        db.session.commit()
+
+        response = app.test_client().patch(
+            '/bakeries/1',
+            data = {
+                "name": "Your Bakery",
+            }
+        )
+
+        assert(response.status_code == 200)
+        assert(response.content_type == 'application/json')
+        assert(mb.name == "Your Bakery")
+
 
     def test_deletes_baked_goods(self):
         '''can DELETE baked goods through "baked_goods/<int:id>" route.'''
